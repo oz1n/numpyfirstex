@@ -6,7 +6,7 @@ g = list(range(1000000))
 %timeit sum(g)
 ```
 
-    8.04 ms ± 298 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+    7.28 ms ± 26.9 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 
 
 
@@ -16,7 +16,7 @@ g_array = np.array(g)
 %timeit np.sum(g_array)
 ```
 
-    504 µs ± 23.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+    469 µs ± 13.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 
 
 ##### 基礎運算與命令
@@ -145,14 +145,25 @@ print(part2)
 
 ##### 步進的寫法要注意 <font color = "#dd0000" size = 5> （ :2 ） </font>
 
+##### <font color = "dd0000"> 值得注意的是，切片索引會改變原數組 <font>
+
 
 ```python
 part3 = final_line[2:5:2,::2] #步進的寫法 :2
-print(part3)
+part3[0,0] = 100
+final_line # 切片會改變原數組
 ```
 
-    [[21 23 25]
-     [41 43 45]]
+
+
+
+    array([[  1,   2,   3,   4,   5],
+           [ 11,  12,  13,  14,  15],
+           [100,  22,  23,  24,  25],
+           [ 31,  32,  33,  34,  35],
+           [ 41,  42,  43,  44,  45],
+           [ 51,  52,  53,  54,  55]])
+
 
 
 ##### 創建一個數組，做一組索引的練習：
@@ -275,11 +286,11 @@ red.copy()
 ```python
 new_a = np.arange(0,80,10)
 indices = [1 , 2, -3]  # 用list來索引數組
-y = new_a[indices]
-print(y)
+new_a[indices][1] = 111  #得到的是一個副本，不改變原數組
+print(new_a)
 ```
 
-    [10 20 50]
+    [ 0 10 20 30 40 50 60 70]
 
 
 ##### <font color = "dd0000">用布爾數組來索引, python 和 numpy 會自動將 0 認作False，將 1 認作True</font>
@@ -323,6 +334,20 @@ result
 
 
 
+##### 怎樣的到負數的索引值
+
+
+```python
+np.nonzero(negatives) # 利用這個函數中，找到負數的索引值，得到一個元祖
+```
+
+
+
+
+    (array([1, 2, 4, 7]),)
+
+
+
 ##### 同樣也可以用<font color = "dd0000"> a[a < 0] </font> 來索引數組，也可以用<font color = "dd0000"> a[a < 0] = 0 </font>來改變數組中的元素的值
 
 
@@ -359,6 +384,595 @@ a[bool_index] #篩選出所需要的元素
 
 
     array([4, 5])
+
+
+
+##### 得到符合條件的元素索引值 Where 方法，得到一個元祖
+
+
+```python
+wa = np.array([1,1,1,134,45,3,46,45,65,3,23424,12,12,3,56,43])
+re = np.where(wa == 3, wa, np.nan) #不加後面的參數得到一個元祖，加上之後得到一個數組，可以修改
+re[0] = 1
+re
+```
+
+
+
+
+    array([ 1., nan, nan, nan, nan,  3., nan, nan, nan,  3., nan, nan, nan,
+            3., nan, nan])
+
+
+
+### 利用 Fancy 索引來找到矩陣中的1， 12 ，23， 34，45
+
+##### 1. 創建一個矩陣：
+
+
+```python
+norm1 = np.arange(6)
+norm2 = norm1 + 10
+norm3 = norm2 + 10
+norm4 = norm3 + 10
+norm5 = norm4 + 10
+norm6 = norm5 + 10
+```
+
+
+```python
+norm = np.vstack([norm1,norm2,norm3,norm4,norm5,norm6])
+norm
+```
+
+
+
+
+    array([[ 0,  1,  2,  3,  4,  5],
+           [10, 11, 12, 13, 14, 15],
+           [20, 21, 22, 23, 24, 25],
+           [30, 31, 32, 33, 34, 35],
+           [40, 41, 42, 43, 44, 45],
+           [50, 51, 52, 53, 54, 55]])
+
+
+
+##### 2. 找到索引號，寫出索引數組
+
+
+```python
+norm[[0,1,2,3,4],[1,2,3,4,5]]
+```
+
+
+
+
+    array([ 1, 12, 23, 34, 45])
+
+
+
+##### 3. 同樣可以創建索引數組：
+
+
+```python
+irow = np.array([0,1,2,3,4])
+icolumn = np.array([1,2,3,4,5])
+norm[irow,icolumn] # 得到相同的結果
+```
+
+
+
+
+    array([ 1, 12, 23, 34, 45])
+
+
+
+##### 4. 利用Bool索引：
+
+
+```python
+mask1 = np.array([1,0,1,0,0,1],dtype = bool)
+norm[mask1,2]
+```
+
+
+
+
+    array([ 2, 22, 52])
+
+
+
+### 花式索引會創建副本：
+
+
+```python
+a
+```
+
+
+
+
+    array([3, 0, 0, 4, 0, 8, 5, 0])
+
+
+
+
+```python
+subset = a[[0,3,5,6]]
+```
+
+
+```python
+a.flags.owndata
+```
+
+
+
+
+    True
+
+
+
+
+```python
+subset.flags.owndata
+```
+
+
+
+
+    True
+
+
+
+
+```python
+a is subset # 表示兩者同樣存在與內存中
+```
+
+
+
+
+    False
+
+
+
+### 小練習：
+1. 找到[1,7,13,19]
+2. 利用bool索引來找出能夠被3整除的數
+
+
+```python
+a = np.arange(25).reshape(5,5)
+print(a)
+```
+
+    [[ 0  1  2  3  4]
+     [ 5  6  7  8  9]
+     [10 11 12 13 14]
+     [15 16 17 18 19]
+     [20 21 22 23 24]]
+
+
+##### 第一題：
+
+
+```python
+ir = np.array([0,1,2,3])
+ic = np.array([1,2,3,4])
+ex1 = a[ir,ic]
+ex1
+```
+
+
+
+
+    array([ 1,  7, 13, 19])
+
+
+
+##### 第二題：
+
+
+```python
+mask = (a % 3 == 0) & (a != 0)
+mask
+```
+
+
+
+
+    array([[False, False, False,  True, False],
+           [False,  True, False, False,  True],
+           [False, False,  True, False, False],
+           [ True, False, False,  True, False],
+           [False,  True, False, False,  True]])
+
+
+
+
+```python
+a[mask]
+```
+
+
+
+
+    array([ 3,  6,  9, 12, 15, 18, 21, 24])
+
+
+
+##### 關於 Nan ： 即是空值，用來填充空的部分，類型是Float
+
+
+```python
+empty_array = np.empty_like(a, dtype = 'float64')
+empty_array # 得到一個垃圾數組
+```
+
+
+
+
+    array([[0.e+000, 5.e-324, 1.e-323, 0.e+000, 5.e-324],
+           [1.e-323, 0.e+000, 5.e-324, 1.e-323, 0.e+000],
+           [5.e-324, 1.e-323, 0.e+000, 5.e-324, 1.e-323],
+           [0.e+000, 5.e-324, 1.e-323, 0.e+000, 5.e-324],
+           [1.e-323, 0.e+000, 5.e-324, 1.e-323, 0.e+000]])
+
+
+
+
+```python
+empty_array.fill(np.nan)
+empty_array # 全部是nan值填充
+```
+
+
+
+
+    array([[nan, nan, nan, nan, nan],
+           [nan, nan, nan, nan, nan],
+           [nan, nan, nan, nan, nan],
+           [nan, nan, nan, nan, nan],
+           [nan, nan, nan, nan, nan]])
+
+
+
+
+```python
+empty_array.dtype
+```
+
+
+
+
+    dtype('float64')
+
+
+
+
+```python
+empty_array[mask] =  a[mask]
+empty_array # 這時候Nan值將填充進去
+```
+
+
+
+
+    array([[nan, nan, nan,  3., nan],
+           [nan,  6., nan, nan,  9.],
+           [nan, nan, 12., nan, nan],
+           [15., nan, nan, 18., nan],
+           [nan, 21., nan, nan, 24.]])
+
+
+
+##### 另一種方法： Where
+
+
+```python
+np.where(a % 3 == 0, a, np.nan) # 得到相同的值
+```
+
+
+
+
+    array([[ 0., nan, nan,  3., nan],
+           [nan,  6., nan, nan,  9.],
+           [nan, nan, 12., nan, nan],
+           [15., nan, nan, 18., nan],
+           [nan, 21., nan, nan, 24.]])
+
+
+
+## 數組間的計算
+
+
+```python
+b = np.array([10,20,3])
+a + b
+```
+
+
+    ---------------------------------------------------------------------------
+
+    ValueError                                Traceback (most recent call last)
+
+    <ipython-input-97-b72317c0fde5> in <module>
+          1 b = np.array([10,20,3])
+    ----> 2 a + b
+    
+
+    ValueError: operands could not be broadcast together with shapes (5,5) (3,) 
+
+
+
+```python
+c = np.array([1,2,3,4,5])
+a + c  # 實現右對齊 才可以進行運算
+```
+
+
+```python
+d = np.arange(40).reshape(8,5)
+```
+
+
+```python
+d
+```
+
+
+```python
+a + d # 右對齊
+```
+
+
+```python
+e = np.arange(30).reshape(2,3,5)
+```
+
+
+```python
+e
+```
+
+
+```python
+a + e
+```
+
+
+```python
+e + a
+```
+
+#####  關於Boardcast 好需要多實驗和思考
+
+### 關於Nan的運算，任何與Nan的運算結果都是Nan，解決是需要用到 Nan 中的很多函數
+
+
+```python
+np.nan + 6
+```
+
+
+```python
+np.sum([1, np.nan, 9])
+```
+
+
+```python
+np.nansum([1, np.nan, 9]) # 忽略Nan 得到一個結果，是浮點類型的
+```
+
+##### 花式索引也可以求和
+
+
+```python
+a[a % 3 == 0].sum()
+```
+
+#### Axis 軸 的運算
+每次相加減少一個維度
+
+
+```python
+axi = np.array([[[1,2,3],[1,2,3]],[[1,2,3],[1,2,3]],[[1,2,3],[1,2,3]],[[1,2,3],[1,2,3]]])
+print(axi) 
+np.sum(axi, axis = -1)  # (4,2,3) 去掉-1 即得到一個（4，2）的矩陣 （-1-1=-2）行相加
+```
+
+
+```python
+np.sum(axi, axis = 0) # (4,2,3) 去掉0 即得到一個（2，3）的矩陣 （0-1=-1）列相加
+```
+
+
+```python
+np.sum(axi, axis = 2) # (4,2,3) 去掉2 即得到一個（4，2）的矩陣 （2-1=1）行相加
+```
+
+
+```python
+np.sum(axi, axis = 1) # (4,2,3) 去掉1 即得到一個（4，3）的矩陣 （1-1=0）維度相加
+```
+
+### 做一個練習： wind_statistics.py
+
+
+```python
+# %load ./exercises/wind_statistics/wind_statistics.py
+"""
+Wind Statistics
+----------------
+
+Topics: Using array methods over different axes, fancy indexing.
+
+1. The data in 'wind.data' has the following format::
+
+        61  1  1 15.04 14.96 13.17  9.29 13.96  9.87 13.67 10.25 10.83 12.58 18.50 15.04
+        61  1  2 14.71 16.88 10.83  6.50 12.62  7.67 11.50 10.04  9.79  9.67 17.54 13.83
+        61  1  3 18.50 16.88 12.33 10.13 11.17  6.17 11.25  8.04  8.50  7.67 12.75 12.71
+
+   The first three columns are year, month and day.  The
+   remaining 12 columns are average windspeeds in knots at 12
+   locations in Ireland on that day.
+
+   Use the 'loadtxt' function from numpy to read the data into
+   an array.
+
+2. Calculate the min, max and mean windspeeds and standard deviation of the
+   windspeeds over all the locations and all the times (a single set of numbers
+   for the entire dataset).
+
+3. Calculate the min, max and mean windspeeds and standard deviations of the
+   windspeeds at each location over all the days (a different set of numbers
+   for each location)
+
+4. Calculate the min, max and mean windspeed and standard deviations of the
+   windspeeds across all the locations at each day (a different set of numbers
+   for each day)
+
+5. Find the location which has the greatest windspeed on each day (an integer
+   column number for each day).
+
+6. Find the year, month and day on which the greatest windspeed was recorded.
+
+7. Find the average windspeed in January for each location.
+
+You should be able to perform all of these operations without using a for
+loop or other looping construct.
+
+Bonus
+~~~~~
+
+1. Calculate the mean windspeed for each month in the dataset.  Treat
+   January 1961 and January 1962 as *different* months. (hint: first find a
+   way to create an identifier unique for each month. The second step might
+   require a for loop.)
+
+2. Calculate the min, max and mean windspeeds and standard deviations of the
+   windspeeds across all locations for each week (assume that the first week
+   starts on January 1 1961) for the first 52 weeks. This can be done without
+   any for loop.
+
+Bonus Bonus
+~~~~~~~~~~~
+
+Calculate the mean windspeed for each month without using a for loop.
+(Hint: look at `searchsorted` and `add.reduceat`.)
+
+Notes
+~~~~~
+
+These data were analyzed in detail in the following article:
+
+   Haslett, J. and Raftery, A. E. (1989). Space-time Modelling with
+   Long-memory Dependence: Assessing Ireland's Wind Power Resource
+   (with Discussion). Applied Statistics 38, 1-50.
+
+
+See :ref:`wind-statistics-solution`.
+"""
+
+from numpy import loadtxt
+
+```
+
+
+```python
+statistics_all = np.loadtxt("./exercises/wind_statistics/wind.data")
+statistics_all.shape
+```
+
+
+
+
+    (6574, 15)
+
+
+
+
+```python
+statistics_year = statistics_all[0:, [0,1,2]]
+statistics_noyear = statistics_all[0:,3:]
+min_noyear = np.min(statistics_noyear, axis = 1) #計算出每天的最小值
+min_dis = np.min(statistics_noyear, axis = 0) # 計算出每個地方的最小值
+max_noyear = np.max(statistics_noyear, axis = 1) #計算出每天的最大值
+max_dis = np.max(statistics_noyear, axis = 0) # 計算出每個地方的最大值
+mean_noyear = np.mean(statistics_noyear, axis = 1) #計算出每天的平均值
+mean_dis = np.mean(statistics_noyear, axis = 0) #計算出每個地方的平均值
+
+min_trans = min_noyear.reshape(-1,1)
+max_trans = max_noyear.reshape(-1,1)
+mean_trans = mean_noyear.reshape(-1,1)
+
+r1 = np.hstack((statistics_year,min_trans)) # 計算每天的最小值，帶日期
+r2 = min_dis
+r3 = np.hstack((statistics_year,max_trans)) # 計算每天的最大值，帶日期
+r4 = max_dis
+r5 = np.hstack((statistics_year,mean_trans)) # 計算每天的平均值， 帶日期
+r6 = mean_dis
+```
+
+##### PS ： 再尋找 axis 的值的時候，行消失，就用 0，也就是計算列，相對應的列消失就用 1 ，計算行。
+
+##### <font color = "dd0000">找到最大值所在的日期：</font>
+
+
+```python
+row = np.where(statistics_noyear == statistics_noyear.max())
+statistics_year[row[0],:]
+```
+
+
+
+
+    array([[66., 12.,  2.]])
+
+
+
+
+```python
+row2 = statistics_noyear.max(axis = 1).argmax() # 返回最大值所在的行數
+statistics_year[row2]
+```
+
+
+
+
+    array([66., 12.,  2.])
+
+
+
+
+```python
+row3 = statistics_noyear.argmax() // statistics_noyear.shape[1]  # 先得到最大值的線型索引，再取整除（商的整數部分）
+statistics_year[row3]
+```
+
+
+
+
+    array([66., 12.,  2.])
+
+
+
+##### <font color = "dd0000">計算12個城市1月的平均值</font>
+
+
+```python
+january = statistics_year[:,1] == 1
+statistics_noyear[january,:].mean(axis = 0)
+```
+
+
+
+
+    array([14.86955197, 12.92166667, 13.29962366,  7.19949821, 11.67571685,
+            8.05483871, 11.81935484,  9.5094086 ,  9.54320789, 10.05356631,
+           14.55051971, 18.02876344])
 
 
 
